@@ -7,7 +7,7 @@
  * @name: the name of the env Variable
  *
  * Return: a pointer to the full PATH value string, NULL if not found
-*/
+ */
 char *get_path(char *name)
 {
 	size_t buffer_len = strlen(name);

@@ -4,49 +4,52 @@
 #include <unistd.h>
 #include <sys/types.h>
 #include <sys/wait.h>
+#include <ctype.h>
 #include "simple_shell.h"
 
 /**
  * simple_shell - my main simple_shell program to execute command programs
+ * @argv: argv from the main.
  */
-void simple_shell(void)
+void simple_shell(char *argv[])
 {
-	char input[9046], *newline, *args[20];
-	int argc, pid, flag = 0, i;
+	char input[4096], *newline, *args[512];
+	int argc, status = 0, i = 0;
+	size_t length;
 
 	while (1)
 	{
 		prompt();
 		if (fgets(input, sizeof(input), stdin) != NULL)
 		{
-			for (i = 0; input[i] != '\n'; i++)
+			length = strlen(input);
+			while (length > 0 && (input[length - 1] == '\n' || input[length - 1] == ' '
+			|| input[length - 1] == '\t' || (isspace(input[length - 1]))))
 			{
-				if (input[i] != ' ')
-					flag++;
+				input[--length] = '\0';
 			}
-			if (flag == 0)
+			newline = input;
+			while (newline[i] == '\0' && (isspace(newline[i]) || newline[i] == '\t'))
+				newline++;
+			if (newline[i] == '\0')
 				continue;
-			newline = strchr(input, '\n');
-			if (newline != NULL)
-				*newline = '\0';
 			if (strcmp(input, "env") == 0)
 			{
 				print_env(environ);
 				continue;
 			}
-			if (strcmp(input, "exit") == 0)
-				break;
 			argc = tokenize_input(input, args), args[argc] = NULL;
-			if (!search_execute(args[0], args))
+			if (strcmp(args[0], "exit") == 0 && args[1] == NULL)
+				exit(status);
+			status = exit_status(args, argc, argv);
+			if (status != 0)
+				exit(status);
+			if (!search_execute(args[0], args, argc, argv))
 			{
-				pid = fork();
-				if (pid == 0)
-					if (execve(args[0], args, environ) == -1)
-						perror(args[0]), exit(2);
-				wait(NULL);
+				status = _fork(args, argc, argv, status);
 			}
 		}
 		else
-			exit(0);
+			exit(status);
 	}
 }

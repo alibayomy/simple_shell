@@ -11,10 +11,11 @@
  * concatenate the full path for that command and execute it.
  * @cmd: Command entered by the user.
  * @args: array of strings.
- *
+ * @argc: the number of the given arguments
+ * @argv: the strings of the given commands
  * Return: 0 if success, -1 if failed.
  */
-void execute_command(const char *cmd, char *args[])
+void execute_command(const char *cmd, char *args[], int argc, char *argv[])
 {
 	pid_t pid;
 
@@ -26,13 +27,13 @@ void execute_command(const char *cmd, char *args[])
 	}
 	else if (pid == 0)
 	{
-		execve(cmd, args, environ); /*i added the enviorn*/
-		perror("execve"); /* This line is executed only if execve fails */
-		exit(EXIT_FAILURE);
+		execve(cmd, args, environ);
+		fprintf(stderr, "%s: %d: %s: not found\n", argv[0], argc, args[0]);
+		exit(127);
 	}
 	else
 	{
-		int status;
+		int status = 0;
 
 		waitpid(pid, &status, 0);
 	}
