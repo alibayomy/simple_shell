@@ -9,20 +9,26 @@
 #include <unistd.h>
 #include <sys/wait.h>
 #include <errno.h>
+#include <ctype.h>
 extern char **environ;
 
 void prompt(void);
 
 int tokenize_input(char *input, char *args[]);
 
-void execute_command(const char *cmd, char *args[]);
+void execute_command(const char *cmd, char *args[], int argc, char *argv[]);
 
-void simple_shell(void);
+void simple_shell(char *argv[]);
 
-int search_execute(const char *cmd, char *args[]);
+int search_execute(const char *cmd, char *args[], int argc, char *argv[]);
 
-char  *get_path(char *name);
+char *get_path(char *name);
 
 void print_env(char **env);
+
+int exit_status(char *args[], int argc, char *argv[]);
+
+int isNumber(char *number);
+int _fork(char *args[], int argc, char *argv[], int status);
 
 #endif
